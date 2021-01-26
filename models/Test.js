@@ -1,16 +1,14 @@
-class Test{
-	constructor(name, id) {
-		this.name = name;
-		this.id = id;
+class Bus{
+	constructor(busNumber, timeToStation) {
+		this.busNumber = busNumber;
+		this.timeToStation = timeToStation;
 	}
 
-	showTestData() {
-		return this.name + ", id: " + this.id; 
+	showBusData() {
+		return "Bus " + this.busNumber + " will arrive in " + this.timeToStation + " minutes."; 
 	};
 
-	editName(newName) {
-		this.name = newName
-	}
+
 };
 
-module.exports = Test;
+module.exports = Bus;
