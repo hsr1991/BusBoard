@@ -78,15 +78,17 @@ exports.getBusData = (req, res) => {
       nextBuses.length = 5;
       nextBuses.sort(function(a, b){return a['Time to station in minutes'] - b['Time to station in minutes']});
       // at this point nextBuses are what we want to pass to the ejs file
-      console.log(nextBuses);
+      // console.log(nextBuses);
 
       let busArray = nextBuses.map(bus => {
-        return new Bus(Bus.busNumber, Bus.timeToStation)
-      });
-    
+        return new Test(bus['Bus Number'], bus['Time to station in minutes'])
+      })
+      console.log(busArray)
+
       res.render('testView', {
-        nextBuses : busArray,
+        busArray: busArray,
       });
+
       // const nextBuses is an array of objects, each object containing the values of the 2 properties
       // which we filtered using the busFilter function defined above.        
     }
