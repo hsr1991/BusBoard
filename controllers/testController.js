@@ -5,8 +5,32 @@ exports.getBusData = (req, res) => {
   
   let postCode = req.params.postcode
 
-
-  getLongitudeLatitude(postCode);
+  function validatePostCode (postCode) {
+   var request = new XMLHttpRequest()
+   request.open('GET', `https://api.postcodes.io/postcodes/${postCode}/validate`, true)
+   request.onload = function () {
+  
+    var postCodeCheck = JSON.parse(request.responseText)
+    var validPostCode = postCodeCheck.result
+    console.log(validPostCode)
+   
+   correctPostCode(validPostCode)
+ 
+    }
+    request.send()
+ 
+  } 
+ 
+ function correctPostCode (validPostCode) {
+   if (validPostCode == true) {
+     getLongitudeLatitude(postCode)
+   } else if (validPostCode == false) {
+     res.render('error') 
+ }
+}
+ ;
+  
+  validatePostCode(postCode);
 
   function getLongitudeLatitude(postCode) 
   {
@@ -83,7 +107,7 @@ exports.getBusData = (req, res) => {
       let busArray = nextBuses.map(bus => {
         return new Test(bus['Bus Number'], bus['Time to station in minutes'])
       })
-      console.log(busArray)
+      //console.log(busArray)
 
       res.render('testView', {
         busArray: busArray,
