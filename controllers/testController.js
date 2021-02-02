@@ -1,10 +1,10 @@
-const Test = require('../models/Test');
+const Bus = require('../models/Test');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest
 
 exports.getBusData = (req, res) => {
   
   let postCode = req.params.postcode
-
+  validatePostCode(postCode);
   function validatePostCode (postCode) {
    var request = new XMLHttpRequest()
    request.open('GET', `https://api.postcodes.io/postcodes/${postCode}/validate`, true)
@@ -25,12 +25,12 @@ exports.getBusData = (req, res) => {
    if (validPostCode == true) {
      getLongitudeLatitude(postCode)
    } else if (validPostCode == false) {
-     res.render('error') 
+     res.render('errorView') //change to errorView so it's clearer
  }
 }
  ;
   
-  validatePostCode(postCode);
+ 
 
   function getLongitudeLatitude(postCode) 
   {
@@ -76,36 +76,46 @@ exports.getBusData = (req, res) => {
     request.send()
   }
 
-  function busFilter (busData) {
-    let busDataFilter = [];
-      for (let i = 0; i < busData.length; i++) {
-      //converts time to station in seconds to minutes
-        let minsToStation = Math.round(busData[i].timeToStation/60)
-      //console.log(busData[i].lineId)
-        busDataFilter.push({'Bus Number': busData[i].lineId ,  
-                        'Time to station in minutes': minsToStation})
-      };
-    return busDataFilter;
-  }
+  // function busFilter (busData) {
+  //   let busDataFilter = [];
+  //     for (let i = 0; i < busData.length; i++) {
+  //     //converts time to station in seconds to minutes
+  //       let minsToStation = Math.round(busData[i].timeToStation/60)
+  //     //console.log(busData[i].lineId)
+  //       busDataFilter.push({'Bus Number': busData[i].lineId ,  
+  //                       'Time to station in minutes': minsToStation})
+  //     };
+  //   return busDataFilter;
+  // }
 
   function getBuses (stopCode) { 
     var request = new XMLHttpRequest()
     request.open('GET', `https://api.tfl.gov.uk/StopPoint/${stopCode}/Arrivals` , true)
     request.onload = function () {
       //the request is returned as a string JSON.parse converts it into an array of objects
-      const busData = JSON.parse(request.responseText);
+      let busData = JSON.parse(request.responseText);
+
+      busData.sort(function (a, b) {
+        return a.timeToStation - b.timeToStation;
+      })
+    
+      printTime = (item) => {    
+        console.log('Minutes to Station: '  + Math.round(item.timeToStation/60) + ', Bus Number: ' + item.lineId);
+      }
+      busData.forEach(printTime)
 
       //console.log(busData)
           
-      const nextBuses = busFilter(busData)
-      //ensures that the array is no longer than 5 elements i.e. only prints next 5 buses
-      nextBuses.length = 5;
-      nextBuses.sort(function(a, b){return a['Time to station in minutes'] - b['Time to station in minutes']});
-      // at this point nextBuses are what we want to pass to the ejs file
-      // console.log(nextBuses);
+      // const nextBuses = busFilter(busData)
+      // //ensures that the array is no longer than 5 elements i.e. only prints next 5 buses
+      // nextBuses.length = 5;
+      // nextBuses.sort(function(a, b){return a['Time to station in minutes'] - b['Time to station in minutes']});
+      // // at this point nextBuses are what we want to pass to the ejs file
+      // // console.log(nextBuses);
 
-      let busArray = nextBuses.map(bus => {
-        return new Test(bus['Bus Number'], bus['Time to station in minutes'])
+      // change from list of tfl objects to list of objects that i've defined
+      let busArray = busData.map(bus => {
+        return new Bus(bus.lineId, Math.round(bus.timeToStation/60))
       })
       //console.log(busArray)
 
@@ -120,3 +130,23 @@ exports.getBusData = (req, res) => {
     request.send()
   }
 };
+
+
+    
+//     let buses = getBusArrivals.map(bus => {
+//       return new Test(bus.lineId, bus.timeToStation)
+//      })
+    
+//       res.render('testView', {
+//         buses: buses,
+//       });
+
+//       // const nextBuses is an array of objects, each object containing the values of the 2 properties
+//       // which we filtered using the busFilter function defined above.        
+//     }
+  
+    
+//     request.send()
+  
+// }
+//   }
